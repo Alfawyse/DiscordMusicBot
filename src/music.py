@@ -155,8 +155,7 @@ def run_bot():
             await ctx.send(f"Queue:\n{queue_list}")
         else:
             await ctx.send("The queue is currently empty!")
-
-    # Iniciar el bot con el token proporcionado
+            
     client.run(TOKEN)
 
 run_bot()
