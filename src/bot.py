@@ -1,26 +1,15 @@
-import os
-import discord
 from discord.ext import commands
-from dotenv import load_dotenv
-from src.music.commands import setup_music_commands  # Make sure to adjust the import according to your folder structure
+from config import DISCORD_TOKEN, get_bot_intents
+from src.music.commands import setup_music_commands  # Ajusta la importación según tu estructura de carpetas
 
 def main():
     """
     Main entry point for the Discord bot.
 
-    This function loads environment variables, configures the bot with necessary intents,
-    sets up music commands, and starts the bot.
+    This function configures the bot with necessary intents, sets up music commands, and starts the bot.
     """
-    # Load environment variables
-    load_dotenv()
-    TOKEN = os.getenv('DISCORD_TOKEN')
-
-    # Configure intents (permissions for the bot)
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    # Create the bot instance with a command prefix and intents
-    bot = commands.Bot(command_prefix=".", intents=intents)
+    # Create the bot instance with a command prefix and configured intents
+    bot = commands.Bot(command_prefix=".", intents=get_bot_intents())
 
     # Load extensions/commands
     setup_music_commands(bot)
@@ -35,8 +24,8 @@ def main():
         """
         print(f'{bot.user} is now online and ready to jam!')
 
-    # Run the bot
-    bot.run(TOKEN)
+    # Run the bot with the loaded token
+    bot.run(DISCORD_TOKEN)
 
 if __name__ == "__main__":
     main()
