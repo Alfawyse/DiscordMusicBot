@@ -81,3 +81,4 @@ def setup_music_commands(bot):
             ctx (commands.Context): The context in which the command was invoked.
         """
         await music_player.clear_queue(ctx)
+

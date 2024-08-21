@@ -1,6 +1,6 @@
 from discord.ext import commands
 from config import DISCORD_TOKEN, get_bot_intents
-from src.music.commands import setup_music_commands  # Ajusta la importación según tu estructura de carpetas
+from src.music.commands import setup_music_commands  # Ajusta la ruta según tu estructura
 
 def main():
     """
