@@ -107,7 +107,16 @@ class MusicPlayer:
         """
         link = self.queue.get_next_song(ctx.guild.id)
         if link:
-            await self.play(ctx, link)
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(None, lambda: self.ytdl.extract_info(link, download=False))
+
+            song = data['url']
+            player = discord.FFmpegOpusAudio(song, **self.ffmpeg_options)
+
+            self.voice_clients[ctx.guild.id].play(
+                player, after=lambda e: asyncio.run_coroutine_threadsafe(self.play_next(ctx), self.bot.loop)
+            )
+            await ctx.send("Now playing!")
 
     async def pause(self, ctx):
         """
