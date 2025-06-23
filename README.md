@@ -22,7 +22,7 @@ You can install the required packages using pip
 
 ## Usage
 
-To start the bot, run the `run_bot()` function in the script. The bot will respond to the following commands:
+To start the bot, run the script using `python -m src.bot` which executes the `main()` function. The bot will respond to the following commands:
 
 - `.play <query>`: Searches for and plays the specified song or YouTube link.
 - `.pause`: Pauses the currently playing track.

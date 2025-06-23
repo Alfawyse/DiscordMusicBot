@@ -32,6 +32,9 @@ class MusicPlayer:
         if ctx.author.voice is None:
             return await ctx.send("Please join a voice channel first!")
 
+        if not args:
+            return await ctx.send("You must specify a search query or link!")
+
         voice_client = self.voice_clients.get(ctx.guild.id)
         if voice_client and voice_client.is_playing():
             self.queue.add_to_queue(ctx.guild.id, " ".join(args))
