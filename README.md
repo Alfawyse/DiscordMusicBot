@@ -7,7 +7,7 @@ This is a Discord bot that allows you to play music in voice channels. It suppor
 Before you can run the bot, you need to have the following installed:
 
 - Python 3.x
-- Discord.py
+- discord.py
 - youtube-search-python
 - yt-dlp
 - python-dotenv
