@@ -17,12 +17,16 @@ You can install the required packages using pip
 ## Setup
 
 1. Create a new Discord bot and obtain its token from the [Discord Developer Portal](https://discord.com/developers/applications).
-2. Create a `.env` file in the same directory as the bot script and add the following line, replacing `YOUR_BOT_TOKEN` with your actual bot token
+2. Create a `.env` file in the same directory as the bot script and add the following line, replacing `YOUR_BOT_TOKEN` with your actual bot token:
+
+   ```
+   DISCORD_TOKEN=YOUR_BOT_TOKEN
+   ```
 3. Invite the bot to your Discord server using the OAuth2 URL Generator in the Discord Developer Portal.
 
 ## Usage
 
-To start the bot, run the script using `python -m src.bot` which executes the `main()` function. The bot will respond to the following commands:
+To start the bot, run the script using `python src/bot.py` or call the `main()` function directly. The bot will respond to the following commands:
 
 - `.play <query>`: Searches for and plays the specified song or YouTube link.
 - `.pause`: Pauses the currently playing track.
