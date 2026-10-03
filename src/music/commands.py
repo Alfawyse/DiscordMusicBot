@@ -1,84 +1,46 @@
 from discord.ext import commands
 from src.music.player import MusicPlayer
 
-def setup_music_commands(bot):
-    """
-    Registers the music-related commands to the bot.
 
-    Args:
-        bot (commands.Bot): The instance of the bot where commands will be registered.
-    """
-    # Create an instance of the MusicPlayer to handle music functionality
-    music_player = MusicPlayer(bot)
+def setup_music_commands(bot, settings):
+    player = MusicPlayer(bot, settings)
 
-    @bot.command(name="play")
-    async def play(ctx, *args):
-        """
-        Command to play a song or add it to the queue.
+    @bot.command(name="play", usage="<nombre o enlace de YouTube>", help="Reproduce un enlace de YouTube o busca una canción.")
+    @commands.guild_only()
+    async def play(ctx, *, query=""):
+        await player.play(ctx, query)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-            *args: The search query or link to the song to be played.
-        """
-        await music_player.play(ctx, *args)
-
-    @bot.command(name="pause")
+    @bot.command(name="pause", help="Pausa la canción actual.")
+    @commands.guild_only()
     async def pause(ctx):
-        """
-        Command to pause the currently playing song.
+        await player.pause(ctx)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.pause(ctx)
-
-    @bot.command(name="resume")
+    @bot.command(name="resume", help="Continúa la canción pausada.")
+    @commands.guild_only()
     async def resume(ctx):
-        """
-        Command to resume the currently paused song.
+        await player.resume(ctx)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.resume(ctx)
-
-    @bot.command(name="stop")
+    @bot.command(name="stop", help="Vacía la cola y desconecta el bot.")
+    @commands.guild_only()
     async def stop(ctx):
-        """
-        Command to stop the music and disconnect the bot from the voice channel.
+        await player.stop(ctx)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.stop(ctx)
-
-    @bot.command(name="skip")
+    @bot.command(name="skip", help="Salta una canción.")
+    @commands.guild_only()
     async def skip(ctx):
-        """
-        Command to skip the currently playing song and play the next one in the queue.
+        await player.skip(ctx)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.skip(ctx)
-
-    @bot.command(name="queue")
+    @bot.command(name="queue", help="Muestra las canciónes pendientes.")
+    @commands.guild_only()
     async def show_queue(ctx):
-        """
-        Command to display the current music queue.
+        await player.show_queue(ctx)
 
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.show_queue(ctx)
+    @bot.command(name="clear", help="Vacía las canciónes pendientes.")
+    @commands.guild_only()
+    async def clear(ctx):
+        await player.clear_queue(ctx)
 
-    @bot.command(name="clear")
-    async def clear_queue(ctx):
-        """
-        Command to clear the current music queue.
-
-        Args:
-            ctx (commands.Context): The context in which the command was invoked.
-        """
-        await music_player.clear_queue(ctx)
-
+    @bot.event
+    async def on_voice_state_update(member, before, after):
+        if member.id == bot.user.id and before.channel and after.channel is None:
+            await player.handle_disconnect(member.guild.id)

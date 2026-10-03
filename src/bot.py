@@ -1,31 +1,79 @@
+"""Run with python -m src.bot or python src/bot.py."""
+import argparse
+import logging
+import sys
+from pathlib import Path
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import discord
 from discord.ext import commands
-from config import DISCORD_TOKEN, get_bot_intents
-from src.music.commands import setup_music_commands  # Ajusta la ruta según tu estructura
+from src.config import check_settings, get_bot_intents, load_settings
+from src.music.commands import setup_music_commands
+from src.help import SpanishHelpCommand
 
-def main():
-    """
-    Main entry point for the Discord bot.
+log = logging.getLogger(__name__)
 
-    This function configures the bot with necessary intents, sets up music commands, and starts the bot.
-    """
-    # Create the bot instance with a command prefix and configured intents
-    bot = commands.Bot(command_prefix=".", intents=get_bot_intents())
 
-    # Load extensions/commands
-    setup_music_commands(bot)
+def create_bot(settings):
+    bot = commands.Bot(
+        command_prefix=settings.prefix,
+        help_command=SpanishHelpCommand(),
+        intents=get_bot_intents(),
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+    setup_music_commands(bot, settings)
 
-    # Event triggered when the bot is ready and connected
     @bot.event
     async def on_ready():
-        """
-        Event handler that is called when the bot has successfully connected to Discord.
+        log.info("Bot conectado: %s", bot.user)
 
-        This function prints a message to the console indicating that the bot is online and ready.
-        """
-        print(f'{bot.user} is now online and ready to jam!')
+    @bot.event
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.CommandNotFound):
+            return
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send("Usa este comando dentro de un servidor.")
+        elif isinstance(error, commands.UserInputError):
+            await ctx.send(f"Revisa el comando. Usa {settings.prefix}help.")
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send("No puedes usar este comando aqui.")
+        else:
+            original = getattr(error, "original", error)
+            log.error("Error en comando", exc_info=(type(original), original, original.__traceback__))
+            await ctx.send("Ocurrio un error. Revisa el registro del bot.")
+    return bot
 
-    # Run the bot with the loaded token
-    bot.run(DISCORD_TOKEN)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--check", action="store_true", help="Valida configuracion sin conectar a Discord.")
+    args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    try:
+        settings = load_settings()
+    except ValueError as error:
+        log.error("%s", error)
+        return 1
+    errors = check_settings(settings)
+    for error in errors:
+        log.error("%s", error)
+    if errors:
+        return 1
+    if args.check:
+        print("Configuracion local valida. Token y permisos se verifican al conectar.")
+        return 0
+    try:
+        create_bot(settings).run(settings.token)
+    except discord.LoginFailure:
+        log.error("Discord rechazo el token. Actualiza DISCORD_TOKEN en .env.")
+        return 1
+    except discord.PrivilegedIntentsRequired:
+        log.error("Activa Message Content Intent en Discord Developer Portal > Bot.")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
